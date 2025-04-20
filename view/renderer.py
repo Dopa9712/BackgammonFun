@@ -59,13 +59,19 @@ class Renderer:
 
         # Load game state text images
         self.text_images = {}
-        for name in ['roll_dice', 'select_point', 'select_dest', 'ai_thinking',
-                     'white_turn', 'black_turn', 'white_wins', 'black_wins']:
-            self.text_images[name] = self.asset_manager.load_image('text', f'{name}.png')
+        text_image_names = ['roll_dice', 'select_point', 'select_dest', 'ai_thinking',
+                            'white_turn', 'black_turn', 'white_wins', 'black_wins']
+
+        for name in text_image_names:
+            img = self.asset_manager.load_image('text', f'{name}.png')
+            if img:
+                self.text_images[name] = img
 
         # Load count overlays
         for i in range(1, 16):
-            self.text_images[f'count_{i}'] = self.asset_manager.load_image('text', f'count_{i}.png')
+            img = self.asset_manager.load_image('text', f'count_{i}.png')
+            if img:
+                self.text_images[f'count_{i}'] = img
 
         # Load highlight images
         self.highlight_images = {

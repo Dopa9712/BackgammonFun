@@ -32,6 +32,7 @@ class AssetManager:
             'pieces': {},
             'dice': {},
             'ui': {},
+            'text': {},  # Added 'text' category
         }
 
         # Set up the assets path
@@ -72,13 +73,17 @@ class AssetManager:
         """Load an image from assets or retrieve from cache.
 
         Args:
-            category: Category of the image (board, pieces, dice, ui)
+            category: Category of the image (board, pieces, dice, ui, text)
             name: Filename of the image
             transparent: Whether the image should have transparency
 
         Returns:
-            pygame.Surface: The loaded image
+            pygame.Surface: The loaded image or None if loading fails
         """
+        # Make sure the category exists in our image cache
+        if category not in self.images:
+            self.images[category] = {}
+
         # Check if already in cache
         if name in self.images[category]:
             return self.images[category][name]
@@ -102,12 +107,10 @@ class AssetManager:
             # Store in cache
             self.images[category][name] = image
             return image
-        except pygame.error as e:
+        except (pygame.error, FileNotFoundError) as e:
             print(f"Error loading image: {filepath} - {e}")
-            # Return a placeholder surface
-            placeholder = pygame.Surface((32, 32))
-            placeholder.fill((255, 0, 255))  # Magenta for missing texture
-            return placeholder
+            # Return None for missing texture
+            return None
 
     def get_font(self, size='regular'):
         """Get a font by its size/name."""
