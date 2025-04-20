@@ -1,40 +1,50 @@
 #!/usr/bin/env python3
-# run_game.py - Run backgammon game with corrected movement and assets path
+# main.py - Entry point for the backgammon game
 
 import os
 import pygame
 import sys
-from board import Board
-from game_controller import GameController
-from renderer import Renderer
-from player import HumanPlayer
-from ai_player import AIPlayer
+import time
+
+# Import game components
+from model.board import Board
+from model.player import HumanPlayer  # This import should now work correctly
+from controller.ai_player import AIPlayer
+from controller.game_controller import GameController
+from view.renderer import Renderer
+from utils.asset_manager import get_asset_manager
+from utils.asset_creator import create_assets
 
 
 def check_assets():
     """Check if required assets exist and generate missing ones."""
-    # Check for generators/assets directory
-    assets_path = 'generators/assets'
-    if not os.path.exists(assets_path):
-        print(f"Assets directory not found at {assets_path}.")
-        # Try to find it in other locations
-        if os.path.exists('assets'):
-            print("Found assets in the current directory.")
-            return
+    assets_path = os.path.join(os.path.dirname(os.path.abspath(__file__)), 'assets')
 
-    # Check for last move highlight
-    last_move_path = os.path.join(assets_path, 'images', 'ui', 'last_move_highlight.png')
-    if not os.path.exists(last_move_path):
-        print("Last move highlight missing. Generating...")
-        try:
-            from create_last_move_highlight import create_last_move_highlight
-            create_last_move_highlight()
-        except ImportError:
-            print("WARNING: Could not generate last move highlight.")
+    # Check if assets directory exists
+    if not os.path.exists(assets_path):
+        print("Assets directory not found. Creating assets...")
+        create_assets()
+        return
+
+    # Check for board image
+    board_path = os.path.join(assets_path, 'images', 'board', 'board.png')
+    if not os.path.exists(board_path):
+        print("Board image missing. Creating assets...")
+        create_assets()
+        return
+
+    # Check for dice images
+    dice_path = os.path.join(assets_path, 'images', 'dice')
+    if not os.path.exists(dice_path) or not os.listdir(dice_path):
+        print("Dice images missing. Creating assets...")
+        create_assets()
+        return
+
+    print("All required assets found.")
 
 
 def main():
-    """Run the backgammon game with the corrected movement directions."""
+    """Main function to run the backgammon game."""
     # Check assets
     check_assets()
 
@@ -44,7 +54,7 @@ def main():
     # Set up display
     width, height = 1024, 768
     screen = pygame.display.set_mode((width, height))
-    pygame.display.set_caption("Backgammon vs AI - Fixed Direction")
+    pygame.display.set_caption("Backgammon Game")
 
     # Display loading screen
     font = pygame.font.SysFont('Arial', 30)
@@ -69,6 +79,9 @@ def main():
     human_player = HumanPlayer('White')
     ai_player = AIPlayer('Black')
     renderer = Renderer(screen, width, height)
+
+    # Allow the renderer to fully load before continuing
+    time.sleep(0.5)
 
     # Create game controller
     game_controller = GameController(board, human_player, ai_player, renderer)
