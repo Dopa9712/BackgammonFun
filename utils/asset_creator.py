@@ -1,4 +1,4 @@
-# utils/asset_creator.py - Elegant asset creation system
+# utils/asset_creator.py - Elegant asset creation system with brighter colors
 
 import pygame
 import os
@@ -7,7 +7,7 @@ from datetime import datetime
 
 
 class AssetCreator:
-    """Creates elegant assets for the backgammon game."""
+    """Creates elegant assets for the backgammon game with brighter colors."""
 
     def __init__(self, width=1024, height=768):
         """Initialize the asset creator with configurable dimensions."""
@@ -26,20 +26,21 @@ class AssetCreator:
         self.point_width = (self.board_width / 2 - 20) / 6  # Slightly narrower for better appearance
         self.bar_width = 40  # Slightly wider bar
 
-        # Color scheme - elegant dark wood and cream theme
+        # Color scheme - UPDATED FOR BRIGHTER COLORS
+        # Original dark wood and cream theme has been brightened
         self.colors = {
-            'background': (40, 26, 13),  # Dark wood
-            'board': (82, 46, 24),  # Medium wood
-            'point_dark': (49, 29, 16),  # Dark brown points
-            'point_light': (230, 210, 180),  # Cream points
-            'bar': (120, 81, 45),  # Lighter wood bar
-            'text': (230, 210, 180),  # Cream text
-            'border': (20, 12, 6),  # Nearly black border
-            'white_piece': (230, 220, 210),  # Off-white pieces
-            'black_piece': (40, 26, 13),  # Dark wood pieces
-            'highlight': (230, 180, 80, 160),  # Golden highlight
-            'button': (120, 81, 45),  # Medium wood buttons
-            'button_highlight': (160, 120, 70)  # Lighter wood when highlighted
+            'background': (65, 40, 20),  # Brightened dark wood
+            'board': (120, 70, 30),  # Brightened medium wood
+            'point_dark': (80, 45, 22),  # Brightened dark brown points
+            'point_light': (250, 230, 190),  # Brighter cream points
+            'bar': (160, 110, 60),  # Brighter wood bar
+            'text': (255, 235, 200),  # Brighter cream text
+            'border': (30, 18, 8),  # Slightly brightened border
+            'white_piece': (255, 245, 235),  # Brighter white pieces
+            'black_piece': (60, 35, 18),  # Brightened dark pieces
+            'highlight': (255, 215, 90, 180),  # Brighter golden highlight
+            'button': (170, 115, 60),  # Brighter medium wood buttons
+            'button_highlight': (210, 160, 90)  # Brighter wood when highlighted
         }
 
         # Set up fonts
@@ -93,7 +94,7 @@ class AssetCreator:
                 print(f"Created directory: {dir_path}")
 
     def _create_board(self):
-        """Create an elegant wooden board image."""
+        """Create an elegant wooden board image with brighter colors."""
         # Get colors
         BACKGROUND_COLOR = self.colors['background']
         BOARD_COLOR = self.colors['board']
@@ -265,13 +266,14 @@ class AssetCreator:
         print(f"Board image saved ({self.width}x{self.height})")
 
     def _draw_wood_texture(self, surface, rect, base_color):
-        """Draw a simple wood grain texture effect."""
+        """Draw a simple wood grain texture effect with enhanced brightness."""
         # Fill with base color first
         pygame.draw.rect(surface, base_color, rect)
 
         r, g, b = base_color
-        lighter = (min(r + 20, 255), min(g + 20, 255), min(b + 20, 255))
-        darker = (max(r - 20, 0), max(g - 20, 0), max(b - 20, 0))
+        # Make the variations more pronounced for brighter appearance
+        lighter = (min(r + 30, 255), min(g + 30, 255), min(b + 30, 255))
+        darker = (max(r - 15, 0), max(g - 15, 0), max(b - 15, 0))
 
         # Add some grain lines - subtle variations
         grain_count = rect.height // 8  # Number of grain lines
@@ -288,7 +290,7 @@ class AssetCreator:
             surface.blit(s, (line_rect.x, line_rect.y))
 
     def _create_ui_elements(self):
-        """Create elegant UI elements like info panel and button backgrounds."""
+        """Create elegant UI elements like info panel and button backgrounds with brighter colors."""
         base_dir = os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))), 'assets')
 
         # Info panel background - dark wood texture
@@ -308,10 +310,38 @@ class AssetCreator:
         pygame.draw.rect(button_highlight, self.colors['text'], button_highlight.get_rect(), 2)
         pygame.image.save(button_highlight, os.path.join(base_dir, 'images', 'ui', 'button_highlight.png'))
 
+        # Create window icon (directly from SVG file if available)
+        try:
+            # Try to convert SVG icon if it exists
+            icon_svg_path = os.path.join(base_dir, 'images', 'ui', 'icon.svg')
+            icon_png_path = os.path.join(base_dir, 'images', 'ui', 'icon.png')
+
+            if os.path.exists(icon_svg_path):
+                # Create a small icon surface
+                icon_size = 64
+                icon = pygame.Surface((icon_size, icon_size), pygame.SRCALPHA)
+
+                # Draw a simple icon if conversion not possible
+                pygame.draw.rect(icon, self.colors['board'], pygame.Rect(0, 0, icon_size, icon_size), 0, 8)
+                pygame.draw.rect(icon, self.colors['border'], pygame.Rect(0, 0, icon_size, icon_size), 2, 8)
+
+                # Draw game pieces
+                pygame.draw.circle(icon, self.colors['black_piece'], (icon_size // 3, icon_size // 3), icon_size // 6)
+                pygame.draw.circle(icon, self.colors['border'], (icon_size // 3, icon_size // 3), icon_size // 6, 1)
+                pygame.draw.circle(icon, self.colors['white_piece'], (2 * icon_size // 3, 2 * icon_size // 3),
+                                   icon_size // 6)
+                pygame.draw.circle(icon, self.colors['border'], (2 * icon_size // 3, 2 * icon_size // 3),
+                                   icon_size // 6, 1)
+
+                pygame.image.save(icon, icon_png_path)
+                print("Created window icon")
+        except Exception as e:
+            print(f"Error creating icon: {e}")
+
         print("UI elements saved")
 
     def _create_pieces(self):
-        """Create elegant checker pieces in different sizes."""
+        """Create elegant checker pieces in different sizes with brighter colors."""
         base_dir = os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))), 'assets')
         sizes = [32, 40, 48]
 
@@ -321,27 +351,27 @@ class AssetCreator:
             center = size // 2
             radius = size // 2 - 1
 
-            # Main circle with gradient effect
+            # Main circle with gradient effect - brighter white
             for r in range(radius, 0, -1):
                 # Create a gradient from center to edge
                 factor = r / radius
                 # Mix between white_piece and a slightly darker shade
                 white_piece_color = self.colors['white_piece']
-                r_val = max(white_piece_color[0] - int(30 * (1 - factor)), 0)
-                g_val = max(white_piece_color[1] - int(30 * (1 - factor)), 0)
-                b_val = max(white_piece_color[2] - int(30 * (1 - factor)), 0)
+                r_val = max(white_piece_color[0] - int(25 * (1 - factor)), 0)
+                g_val = max(white_piece_color[1] - int(25 * (1 - factor)), 0)
+                b_val = max(white_piece_color[2] - int(25 * (1 - factor)), 0)
                 pygame.draw.circle(white, (r_val, g_val, b_val), (center, center), r)
 
             # Border
             pygame.draw.circle(white, self.colors['border'], (center, center), radius, 2)
 
-            # Inner highlight for 3D effect
+            # Inner highlight for 3D effect - enhanced
             highlight_radius = radius - 4
-            pygame.draw.circle(white, (255, 255, 255, 180), (center - 2, center - 2), highlight_radius // 2)
+            pygame.draw.circle(white, (255, 255, 255, 200), (center - 2, center - 2), highlight_radius // 2)
 
             pygame.image.save(white, os.path.join(base_dir, 'images', 'pieces', f'white_piece_{size}.png'))
 
-            # Black piece
+            # Black piece - brighter
             black = pygame.Surface((size, size), pygame.SRCALPHA)
 
             # Main circle with gradient effect
@@ -350,39 +380,39 @@ class AssetCreator:
                 factor = r / radius
                 # Mix between black_piece and a slightly darker shade
                 black_piece_color = self.colors['black_piece']
-                r_val = max(black_piece_color[0] - int(20 * (1 - factor)), 0)
-                g_val = max(black_piece_color[1] - int(20 * (1 - factor)), 0)
-                b_val = max(black_piece_color[2] - int(20 * (1 - factor)), 0)
+                r_val = max(black_piece_color[0] - int(15 * (1 - factor)), 0)
+                g_val = max(black_piece_color[1] - int(15 * (1 - factor)), 0)
+                b_val = max(black_piece_color[2] - int(15 * (1 - factor)), 0)
                 pygame.draw.circle(black, (r_val, g_val, b_val), (center, center), r)
 
             # Border
             pygame.draw.circle(black, self.colors['border'], (center, center), radius, 2)
 
-            # Inner highlight for 3D effect
-            pygame.draw.circle(black, (90, 60, 30, 180), (center - 2, center - 2), highlight_radius // 2)
+            # Inner highlight for 3D effect - enhanced
+            pygame.draw.circle(black, (120, 80, 40, 180), (center - 2, center - 2), highlight_radius // 2)
 
             pygame.image.save(black, os.path.join(base_dir, 'images', 'pieces', f'black_piece_{size}.png'))
 
         print("Piece images saved in multiple sizes")
 
     def _create_dice(self):
-        """Create elegant wooden dice images for all values and states."""
+        """Create elegant wooden dice images for all values and states with brighter colors."""
         base_dir = os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))), 'assets')
         sizes = [40, 48]
 
         for size in sizes:
             for value in range(1, 7):
-                # Regular dice with wood effect
+                # Regular dice with wood effect - brighter
                 die = pygame.Surface((size, size), pygame.SRCALPHA)
 
-                # Die body - ivory color
-                die_color = (230, 225, 200)  # Ivory
+                # Die body - ivory color - brightened
+                die_color = (245, 240, 215)  # Brighter ivory
                 die_rect = pygame.Rect(0, 0, size, size)
                 pygame.draw.rect(die, die_color, die_rect, 0, size // 8)  # Rounded corners
 
-                # Add subtle texture
+                # Add subtle texture with brighter colors
                 for y in range(0, size, 4):
-                    color_var = (220, 215, 190) if y % 8 == 0 else (235, 230, 205)
+                    color_var = (235, 230, 205) if y % 8 == 0 else (250, 245, 220)
                     line_rect = pygame.Rect(0, y, size, 2)
                     s = pygame.Surface((line_rect.width, line_rect.height), pygame.SRCALPHA)
                     s.fill((color_var[0], color_var[1], color_var[2], 40))
@@ -391,11 +421,11 @@ class AssetCreator:
                 # Border
                 pygame.draw.rect(die, self.colors['border'], die_rect, 2, size // 8)
 
-                # Draw pips in dark brown
+                # Draw pips in dark brown - slightly darker than the background for contrast
                 dot_radius = size // 10
                 center = size // 2
                 offset = size // 3
-                pip_color = (40, 26, 13)  # Dark brown pips
+                pip_color = (35, 22, 10)  # Darker brown pips for better contrast
 
                 if value == 1:
                     pygame.draw.circle(die, pip_color, (center, center), dot_radius)
@@ -425,9 +455,9 @@ class AssetCreator:
                     pygame.draw.circle(die, pip_color, (center + offset // 2, center), dot_radius)
                     pygame.draw.circle(die, pip_color, (center + offset // 2, center + offset // 2), dot_radius)
 
-                # Add subtle 3D effect with highlights and shadows
+                # Add enhanced 3D effect with brighter highlights and shadows
                 highlight = pygame.Surface((size, size), pygame.SRCALPHA)
-                pygame.draw.rect(highlight, (255, 255, 255, 40), (3, 3, size - 6, size // 4), 0, size // 10)
+                pygame.draw.rect(highlight, (255, 255, 255, 60), (3, 3, size - 6, size // 4), 0, size // 10)
                 die.blit(highlight, (0, 0))
 
                 # Save regular die
@@ -436,14 +466,14 @@ class AssetCreator:
                 # Create used (grayed out) version
                 used_die = die.copy()
                 overlay = pygame.Surface((size, size), pygame.SRCALPHA)
-                overlay.fill((100, 100, 100, 128))  # Semi-transparent gray
+                overlay.fill((100, 100, 100, 120))  # Semi-transparent gray (less opaque for brighter look)
                 used_die.blit(overlay, (0, 0))
                 pygame.image.save(used_die, os.path.join(base_dir, 'images', 'dice', f'die_{value}_used_{size}.png'))
 
         print("Dice images saved in multiple sizes")
 
     def _create_highlight_overlays(self):
-        """Create elegant highlight overlays for points and bar."""
+        """Create elegant highlight overlays for points and bar with brighter colors."""
         base_dir = os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))), 'assets')
 
         # Convert parameters to integers for surface creation
@@ -482,16 +512,16 @@ class AssetCreator:
         home_highlight.fill(self.colors['highlight'])
         pygame.image.save(home_highlight, os.path.join(base_dir, 'images', 'ui', 'home_highlight.png'))
 
-        # Special last move highlight (blue tint)
+        # Special last move highlight (brighter blue tint)
         last_move = pygame.Surface((point_width, quad_height), pygame.SRCALPHA)
-        last_move_color = (100, 150, 230, 128)  # Blue highlight
+        last_move_color = (120, 180, 255, 150)  # Brighter blue highlight
         pygame.draw.polygon(last_move, last_move_color, points)
         pygame.image.save(last_move, os.path.join(base_dir, 'images', 'ui', 'last_move_highlight.png'))
 
         print("Highlight overlays saved")
 
     def _create_text_elements(self):
-        """Create elegant text elements for common game states."""
+        """Create elegant text elements for common game states with brighter, more visible text."""
         base_dir = os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))), 'assets')
 
         # Game state texts
@@ -507,9 +537,9 @@ class AssetCreator:
         }
 
         for name, text in states.items():
-            # Create a fancier text surface with a subtle shadow
+            # Create a fancier text surface with stronger shadow for better contrast
             text_color = self.colors['text']
-            shadow_color = (0, 0, 0)
+            shadow_color = (10, 5, 0)  # Slightly warmer black for shadow
 
             # Create shadow first
             shadow_surface = self.font.render(text, True, shadow_color)
@@ -518,23 +548,23 @@ class AssetCreator:
             text_surface = self.font.render(text, True, text_color)
 
             # Combine them with offset
-            combined = pygame.Surface((text_surface.get_width() + 2, text_surface.get_height() + 2), pygame.SRCALPHA)
+            combined = pygame.Surface((text_surface.get_width() + 3, text_surface.get_height() + 3), pygame.SRCALPHA)
             combined.blit(shadow_surface, (2, 2))  # Shadow position
             combined.blit(text_surface, (0, 0))  # Main text position
 
             pygame.image.save(combined, os.path.join(base_dir, 'images', 'text', f'{name}.png'))
 
-        # Create number overlays for piece counts (1-15)
+        # Create number overlays for piece counts (1-15) with brighter colors
         for i in range(1, 16):
-            count_color = self.colors['text']
+            count_color = self.colors['text']  # Brighter text color
             count = self.small_font.render(str(i), True, count_color)
 
-            # Add background
+            # Add background with less opacity for brighter appearance
             bg_surface = pygame.Surface((count.get_width() + 6, count.get_height() + 6), pygame.SRCALPHA)
-            bg_surface.fill((0, 0, 0, 180))  # Semi-transparent black
+            bg_surface.fill((20, 10, 5, 160))  # Semi-transparent dark background
 
-            # Add a subtle border
-            pygame.draw.rect(bg_surface, (180, 150, 80, 200), bg_surface.get_rect(), 1)
+            # Add a brighter gold border
+            pygame.draw.rect(bg_surface, (220, 180, 80, 220), bg_surface.get_rect(), 1)
 
             bg_surface.blit(count, (3, 3))
             pygame.image.save(bg_surface, os.path.join(base_dir, 'images', 'text', f'count_{i}.png'))
@@ -543,9 +573,10 @@ class AssetCreator:
 
 
 def create_assets(width=1024, height=768):
-    """Convenience function to create all assets."""
+    """Convenience function to create all assets with brighter colors."""
     creator = AssetCreator(width, height)
     creator.create_all_assets()
+    print("Created all assets with bright, vibrant color scheme")
 
 
 if __name__ == "__main__":
