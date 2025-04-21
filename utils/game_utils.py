@@ -125,3 +125,129 @@ def draw_centered_text(surface, text, y_position, size="regular", color=(255, 25
         color: Text color
     """
     draw_text(surface, text, (surface.get_width() // 2, y_position), size, color, "center")
+
+
+def draw_text_with_shadow(surface, text, position, size="regular", color=(255, 255, 255),
+                          shadow_color=(0, 0, 0), offset=(2, 2), align="left"):
+    """Draw text with a shadow effect.
+
+    Args:
+        surface: The surface to draw on
+        text: The text to display
+        position: (x, y) tuple for position
+        size: Font size ("small", "regular", "large")
+        color: Text color
+        shadow_color: Shadow color
+        offset: Shadow offset
+        align: Alignment ("left", "center", "right")
+    """
+    asset_manager = get_asset_manager()
+    font = asset_manager.get_font(size)
+
+    # Create shadow and text surfaces
+    shadow_surface = font.render(text, True, shadow_color)
+    text_surface = font.render(text, True, color)
+
+    # Set up rectangles for positioning
+    shadow_rect = shadow_surface.get_rect()
+    text_rect = text_surface.get_rect()
+
+    x, y = position
+
+    if align == "center":
+        shadow_rect.centerx = x + offset[0]
+        shadow_rect.y = y + offset[1]
+        text_rect.centerx = x
+        text_rect.y = y
+    elif align == "right":
+        shadow_rect.right = x + offset[0]
+        shadow_rect.y = y + offset[1]
+        text_rect.right = x
+        text_rect.y = y
+    else:  # left
+        shadow_rect.x = x + offset[0]
+        shadow_rect.y = y + offset[1]
+        text_rect.x = x
+        text_rect.y = y
+
+    # Draw shadow first, then text
+    surface.blit(shadow_surface, shadow_rect)
+    surface.blit(text_surface, text_rect)
+
+
+def draw_semi_transparent_overlay(surface, color, alpha, rect=None):
+    """Draw a semi-transparent overlay on the surface.
+
+    Args:
+        surface: The surface to draw on
+        color: Base color (r, g, b)
+        alpha: Alpha value (0-255)
+        rect: Rectangle to fill, or None for full surface
+    """
+    if rect is None:
+        rect = surface.get_rect()
+
+    overlay = pygame.Surface((rect.width, rect.height), pygame.SRCALPHA)
+    overlay.fill((*color, alpha))
+    surface.blit(overlay, rect.topleft)
+
+
+def create_navigation_controls(renderer, font, center_y, button_gap=20):
+    """Create a set of navigation controls for review mode.
+
+    Args:
+        renderer: The renderer object
+        font: Font to use for buttons
+        center_y: Vertical center position for buttons
+        button_gap: Gap between buttons
+
+    Returns:
+        dict: Dictionary of button objects
+    """
+    buttons = {}
+
+    # Button styling
+    button_width = 100
+    button_height = 40
+    bg_color = (120, 81, 45)  # Medium wood
+    highlight_color = (160, 120, 70)  # Lighter wood when highlighted
+    text_color = (230, 210, 180)  # Cream text
+
+    # Calculate horizontal positions
+    width = renderer.width
+    center_x = width // 2
+    button_x_positions = [
+        center_x - (button_width * 2) - (button_gap * 2),  # First
+        center_x - button_width - button_gap,  # Previous
+        center_x + button_gap,  # Next
+        center_x + button_width + (button_gap * 2)  # Last
+    ]
+
+    # Create buttons
+    buttons["first"] = create_button("⏮ First", font,
+                                     (button_x_positions[0], center_y - button_height // 2),
+                                     (button_width, button_height),
+                                     bg_color, text_color, highlight_color)
+
+    buttons["prev"] = create_button("◀ Previous", font,
+                                    (button_x_positions[1], center_y - button_height // 2),
+                                    (button_width, button_height),
+                                    bg_color, text_color, highlight_color)
+
+    buttons["next"] = create_button("Next ▶", font,
+                                    (button_x_positions[2], center_y - button_height // 2),
+                                    (button_width, button_height),
+                                    bg_color, text_color, highlight_color)
+
+    buttons["last"] = create_button("Last ⏭", font,
+                                    (button_x_positions[3], center_y - button_height // 2),
+                                    (button_width, button_height),
+                                    bg_color, text_color, highlight_color)
+
+    # Add exit button
+    buttons["exit"] = create_button("Exit Review", font,
+                                    (center_x - 60, center_y + button_height),
+                                    (120, 35),
+                                    bg_color, text_color, highlight_color)
+
+    return buttons

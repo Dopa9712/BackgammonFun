@@ -1,4 +1,4 @@
-# view/renderer.py - Simplified renderer that assumes assets exist
+# view/renderer.py - Updated with review mode support
 
 import pygame
 import os
@@ -7,19 +7,14 @@ import sys
 # Add parent directory to path to allow imports from other modules
 sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 from utils.asset_manager import get_asset_manager
+from utils.game_utils import draw_text, draw_centered_text, create_button, draw_button
 
 
 class Renderer:
-    """Handles rendering the backgammon game - assumes all assets exist."""
+    """Handles rendering the backgammon game with review mode support."""
 
     def __init__(self, screen, width, height):
-        """Initialize the renderer.
-
-        Args:
-            screen: Pygame screen object
-            width: Screen width
-            height: Screen height
-        """
+        """Initialize the renderer."""
         self.screen = screen
         self.width = width
         self.height = height
@@ -45,8 +40,49 @@ class Renderer:
         # Debug mode for development
         self.debug_mode = False
 
+        # Review mode buttons (will be initialized in _create_review_buttons)
+        self.review_buttons = {}
+        self._create_review_buttons()
+
         # Load all required assets
         self._load_assets()
+
+    # Add this method to your Renderer class in view/renderer.py
+    def _draw_review_overlay(self, game_state):
+        """Draw an overlay with review information."""
+        # Draw a semi-transparent top bar
+        top_overlay_height = 80
+        top_overlay = pygame.Surface((self.width, top_overlay_height), pygame.SRCALPHA)
+        top_overlay.fill((40, 26, 13, 220))
+        self.screen.blit(top_overlay, (0, 0))
+
+        # Draw text lines with proper spacing
+        review_info = game_state.get("review_info", "Review Mode")
+        move_description = game_state.get("move_description", "")
+
+        # Draw title (review info)
+        font_large = self.asset_manager.get_font('large')
+        text_surface = font_large.render(review_info, True, (230, 210, 180))
+        text_rect = text_surface.get_rect(center=(self.width // 2, 25))
+        self.screen.blit(text_surface, text_rect)
+
+        # Draw move description below
+        if move_description:
+            font_regular = self.asset_manager.get_font('regular')
+            desc_surface = font_regular.render(move_description, True, (230, 210, 180))
+            desc_rect = desc_surface.get_rect(center=(self.width // 2, 55))
+            self.screen.blit(desc_surface, desc_rect)
+
+        # Draw instructions at the bottom
+        bottom_overlay = pygame.Surface((self.width, 40), pygame.SRCALPHA)
+        bottom_overlay.fill((40, 26, 13, 220))
+        self.screen.blit(bottom_overlay, (0, self.height - 40))
+
+        instructions = "◄ ► arrows: Navigate moves | Home/End: First/Last move | Esc: Exit"
+        font_regular = self.asset_manager.get_font('regular')
+        instruction_surface = font_regular.render(instructions, True, (230, 210, 180))
+        instruction_rect = instruction_surface.get_rect(center=(self.width // 2, self.height - 20))
+        self.screen.blit(instruction_surface, instruction_rect)
 
     def _load_assets(self):
         """Load all required assets - assumes they exist."""
@@ -90,6 +126,56 @@ class Renderer:
             self.dice_images[f'{value}_used'] = self.asset_manager.load_image('dice',
                                                                               f'die_{value}_used_{self.dice_size}.png')
 
+        # Load or create UI buttons
+        self.button_normal = self.asset_manager.load_image('ui', 'button_normal.png')
+        self.button_highlight = self.asset_manager.load_image('ui', 'button_highlight.png')
+
+    def _create_review_buttons(self):
+        """Create buttons for the review mode interface."""
+        # Get the appropriate font
+        font = self.asset_manager.get_font('regular')
+
+        # Button colors
+        button_bg = (120, 81, 45)  # Medium wood
+        button_highlight = (160, 120, 70)  # Lighter wood when highlighted
+        text_color = (230, 210, 180)  # Cream text
+
+        # Create buttons for review navigation
+        button_width = 120
+        button_height = 40
+        gap = 20
+
+        # Calculate positions
+        center_x = self.width // 2
+        bottom_y = self.height - 60
+
+        # Main navigation buttons at the bottom
+        self.review_buttons['first'] = create_button("⏮ First", font,
+                                                     (center_x - 2 * button_width - 2 * gap, bottom_y),
+                                                     (button_width, button_height),
+                                                     button_bg, text_color, button_highlight)
+
+        self.review_buttons['prev'] = create_button("◀ Previous", font,
+                                                    (center_x - button_width - gap, bottom_y),
+                                                    (button_width, button_height),
+                                                    button_bg, text_color, button_highlight)
+
+        self.review_buttons['next'] = create_button("Next ▶", font,
+                                                    (center_x + gap, bottom_y),
+                                                    (button_width, button_height),
+                                                    button_bg, text_color, button_highlight)
+
+        self.review_buttons['last'] = create_button("Last ⏭", font,
+                                                    (center_x + button_width + 2 * gap, bottom_y),
+                                                    (button_width, button_height),
+                                                    button_bg, text_color, button_highlight)
+
+        # Exit button at the top
+        self.review_buttons['exit'] = create_button("Exit Review Mode", font,
+                                                    (center_x - button_width // 2, 20),
+                                                    (button_width, button_height),
+                                                    button_bg, text_color, button_highlight)
+
     def _calculate_point_positions(self):
         """Calculate positions of all points (for piece placement)."""
         positions = {}
@@ -130,15 +216,58 @@ class Renderer:
         return positions
 
     def render(self, board, game_state):
-        """Render the game (assumes all assets exist).
+        """Render the game with review mode support."""
+        # Get the board to render (might be a historical board in review mode)
+        render_board = game_state.get("board", board)
 
-        Args:
-            board: The game board
-            game_state: Dictionary containing the current game state
-        """
+        # Check if in review mode
+        is_review_mode = game_state.get("review_mode", False)
+
+        if is_review_mode:
+            # ... your review rendering code ...
+
+            # Draw the review overlay with information
+            self._draw_review_overlay(game_state)
+
         # Draw the board
         self.screen.blit(self.board_image, (0, 0))
 
+        # Highlight things differently based on mode
+        if not is_review_mode:
+            # Normal gameplay - highlight moves and selections
+            self._render_normal_highlights(game_state)
+        else:
+            # Review mode - no highlights, just show the board state
+            pass
+
+        # Blit pieces
+        self._blit_pieces(render_board)
+
+        # Blit dice - in review mode, use historical dice values
+        if is_review_mode:
+            self._blit_dice(game_state.get("dice_values", []), game_state.get("dice_used", []))
+        else:
+            self._blit_dice(game_state.get("dice_values", []), game_state.get("dice_used", []))
+
+        # Render different overlay based on mode
+        if is_review_mode:
+            self._render_review_overlay(game_state)
+        else:
+            # Blit game state info
+            self._blit_game_info(game_state)
+
+            # Blit AI's last move info
+            self._blit_last_move_info(game_state.get("last_ai_moves", []))
+
+        # Display debug info if enabled
+        if self.debug_mode:
+            self._display_debug_info(render_board, game_state)
+
+        # Update the display
+        pygame.display.flip()
+
+    def _render_normal_highlights(self, game_state):
+        """Render highlights for normal gameplay."""
         # Highlight last AI moves
         if game_state.get("last_ai_moves"):
             self._blit_last_moves(game_state["last_ai_moves"])
@@ -153,24 +282,32 @@ class Renderer:
                     if from_point == game_state["selected_point"]:
                         self._blit_highlight(to_point)
 
-        # Blit pieces
-        self._blit_pieces(board)
+    def _render_review_overlay(self, game_state):
+        """Render the review mode overlay with navigation controls."""
+        # Draw a semi-transparent overlay at the top and bottom
+        overlay_height = 70
+        top_overlay = pygame.Surface((self.width, overlay_height), pygame.SRCALPHA)
+        bottom_overlay = pygame.Surface((self.width, overlay_height), pygame.SRCALPHA)
 
-        # Blit dice
-        self._blit_dice(game_state.get("dice_values", []), game_state.get("dice_used", []))
+        # Dark wood background
+        top_overlay.fill((40, 26, 13, 220))
+        bottom_overlay.fill((40, 26, 13, 220))
 
-        # Blit game state info
-        self._blit_game_info(game_state)
+        # Position overlays
+        self.screen.blit(top_overlay, (0, 0))
+        self.screen.blit(bottom_overlay, (0, self.height - overlay_height))
 
-        # Blit AI's last move info
-        self._blit_last_move_info(game_state.get("last_ai_moves", []))
+        # Draw review buttons
+        for button_name, button in self.review_buttons.items():
+            draw_button(self.screen, button)
 
-        # Display debug info if enabled
-        if self.debug_mode:
-            self._display_debug_info(board, game_state)
-
-        # Update the display
-        pygame.display.flip()
+        # Draw review messages
+        messages = game_state.get("review_messages", ["Review Mode"])
+        y_pos = 15
+        for message in messages:
+            if y_pos < overlay_height:  # Only draw messages that fit in the top overlay
+                draw_centered_text(self.screen, message, y_pos, "regular", (230, 210, 180))
+                y_pos += 20
 
     def _blit_last_moves(self, last_moves):
         """Blit highlights for AI's last moves."""
@@ -202,18 +339,10 @@ class Renderer:
                 home_y = self.board_margin_y if to_point == 26 else self.board_margin_y + self.board_height / 2
                 self.screen.blit(self.highlight_images['home'], (int(home_x), int(home_y)))
 
-    # Add this method to your renderer.py file inside the Renderer class
-
     def add_move_animation(self, from_point, to_point, color, duration=30):
         """Add an animation for a piece moving between points.
 
         This is a placeholder for future animation support.
-
-        Args:
-            from_point: Starting point
-            to_point: Destination point
-            color: Piece color
-            duration: Animation duration in frames
         """
         # This is a stub for future animation implementation
         # Currently, we don't do any animations, but the method needs to exist
@@ -381,14 +510,15 @@ class Renderer:
             text_key = "white_wins" if game_state.get("current_player") == "White" else "black_wins"
 
         # Blit instruction text
-        if text_key:
+        if text_key and text_key in self.text_images:
             text_img = self.text_images[text_key]
             self.screen.blit(text_img, (self.width - text_img.get_width() - 20, 20))
 
         # Blit player turn text
         player_key = "white_turn" if game_state.get("current_player") == "White" else "black_turn"
-        player_img = self.text_images[player_key]
-        self.screen.blit(player_img, (20, 20))
+        if player_key in self.text_images:
+            player_img = self.text_images[player_key]
+            self.screen.blit(player_img, (20, 20))
 
     def _blit_last_move_info(self, last_moves):
         """Display AI's last move information on screen."""
@@ -424,20 +554,19 @@ class Renderer:
             f"FPS: {int(pygame.time.Clock().get_fps())}"
         ]
 
+        # Add review mode debug info if relevant
+        if game_state.get("review_mode", False):
+            debug_texts.append("REVIEW MODE ACTIVE")
+            if "review_messages" in game_state:
+                for msg in game_state["review_messages"]:
+                    debug_texts.append(f"  {msg}")
+
         for text in debug_texts:
             self._draw_text(text, (20, y_pos), 'small')
             y_pos += line_height
 
     def _draw_text(self, text, position, size='regular', color=(230, 210, 180), align="left"):
-        """Draw text with a shadow effect.
-
-        Args:
-            text: The text to render
-            position: (x, y) position tuple
-            size: Font size ('small', 'regular', 'large')
-            color: Text color as RGB tuple
-            align: Text alignment ('left', 'center', 'right')
-        """
+        """Draw text with a shadow effect."""
         text_surface = self.asset_manager.create_text_surface(text, size, color)
         shadow_surface = self.asset_manager.create_text_surface(text, size, (0, 0, 0))
 
@@ -452,14 +581,7 @@ class Renderer:
         self.screen.blit(text_surface, (x, y))
 
     def get_point_at_position(self, pos):
-        """Convert screen position to board point.
-
-        Args:
-            pos: (x, y) tuple of screen coordinates
-
-        Returns:
-            int or None: The point number (0-27) at the given position, or None if no point
-        """
+        """Convert screen position to board point."""
         x, y = pos
 
         # Check bottom row (1-12)
@@ -514,3 +636,11 @@ class Renderer:
     def toggle_debug_mode(self):
         """Toggle the debug display mode."""
         self.debug_mode = not self.debug_mode
+
+    def update_review_buttons(self, mouse_pos):
+        """Update the highlight state of review buttons based on mouse position."""
+        for button_name, button in self.review_buttons.items():
+            # Check if mouse is over this button
+            button["highlighted"] = button["rect"].collidepoint(mouse_pos)
+
+        return any(button["highlighted"] for button in self.review_buttons.values())
