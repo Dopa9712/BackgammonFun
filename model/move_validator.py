@@ -204,13 +204,17 @@ class MoveValidator:
             if die_value == exact_value_needed:
                 return True
 
-            # Higher value only works if no pieces on higher points
+            # Higher value works only for the farthest checker (lowest point number in home board)
             if die_value > exact_value_needed:
-                # Check if there are any white pieces on higher points
-                for p in range(from_point + 1, 25):
+                # Find the lowest point in home board that has a piece
+                lowest_point_with_piece = None
+                for p in range(19, 25):  # Check points 19-24
                     if board.count_pieces_at(p, color) > 0:
-                        return False
-                return True
+                        lowest_point_with_piece = p
+                        break
+
+                # If from_point is the lowest point with a piece, allow bearing off
+                return from_point == lowest_point_with_piece
 
             # Lower value never works for bearing off
             return False
@@ -226,13 +230,17 @@ class MoveValidator:
             if die_value == exact_value_needed:
                 return True
 
-            # Higher value only works if no pieces on lower points
+            # Higher value works only for the farthest checker (highest point number in home board)
             if die_value > exact_value_needed:
-                # Check if there are any black pieces on lower points
-                for p in range(1, from_point):
+                # Find the highest point in home board that has a piece
+                highest_point_with_piece = None
+                for p in range(6, 0, -1):  # Check points 6 down to 1
                     if board.count_pieces_at(p, color) > 0:
-                        return False
-                return True
+                        highest_point_with_piece = p
+                        break
+
+                # If from_point is the highest point with a piece, allow bearing off
+                return from_point == highest_point_with_piece
 
             # Lower value never works for bearing off
             return False
@@ -278,17 +286,18 @@ class MoveValidator:
             if exact_dice in available_dice:
                 return exact_dice
 
-            # Check for larger dice if no pieces on higher points
+            # Check for larger dice for bearing off the farthest checker
             larger_dice = [d for d in available_dice if d > exact_dice]
             if larger_dice:
-                # Check if there are pieces on higher points
-                has_higher_pieces = False
-                for p in range(from_point + 1, 25):
+                # Find the lowest point in home board that has a piece
+                lowest_point_with_piece = None
+                for p in range(19, 25):  # Check points 19-24
                     if self.board.count_pieces_at(p, color) > 0:
-                        has_higher_pieces = True
+                        lowest_point_with_piece = p
                         break
 
-                if not has_higher_pieces:
+                # If this is the farthest checker, allow using larger dice
+                if from_point == lowest_point_with_piece:
                     return min(larger_dice)  # Use smallest larger dice
 
             return None
@@ -303,17 +312,18 @@ class MoveValidator:
             if exact_dice in available_dice:
                 return exact_dice
 
-            # Check for larger dice if no pieces on lower points
+            # Check for larger dice for bearing off the farthest checker
             larger_dice = [d for d in available_dice if d > exact_dice]
             if larger_dice:
-                # Check if there are pieces on lower points
-                has_lower_pieces = False
-                for p in range(1, from_point):
+                # Find the highest point in home board that has a piece
+                highest_point_with_piece = None
+                for p in range(6, 0, -1):  # Check points 6 down to 1
                     if self.board.count_pieces_at(p, color) > 0:
-                        has_lower_pieces = True
+                        highest_point_with_piece = p
                         break
 
-                if not has_lower_pieces:
+                # If this is the farthest checker, allow using larger dice
+                if from_point == highest_point_with_piece:
                     return min(larger_dice)  # Use smallest larger dice
 
             return None

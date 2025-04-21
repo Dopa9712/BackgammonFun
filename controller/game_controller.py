@@ -254,15 +254,7 @@ class GameController:
         return has_pieces and valid_start_point
 
     def try_move(self, from_point, to_point):
-        """Try to move a piece with improved validation and animation.
-
-        Args:
-            from_point: Source point number (0-25)
-            to_point: Destination point number (0-27)
-
-        Returns:
-            bool: True if the move was successful, False otherwise
-        """
+        """Try to move a piece with improved validation and animation."""
         color = self.current_player.get_color()
 
         # Get unused dice values
